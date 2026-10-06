@@ -1,0 +1,160 @@
+\documentclass[11pt, a4paper]{article}
+\usepackage{graphicx}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{amsmath, amssymb}
+\usepackage[usenames]{color}
+\usepackage{colortbl}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{multicol}
+\usepackage{tabularx}
+\usepackage{caption}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta}
+\usepackage[backend=biber, style=authoryear, maxcitenames=1, uniquelist=false]{biblatex}
+% у записи с полем shorthand (Kaggle) в списке литературы печатается её номер верхним индексом
+\renewbibmacro*{begentry}{\iffieldundef{shorthand}{}{\textsuperscript{\printfield{shorthand}}}}
+\addbibresource{source.bib}
+\usepackage{csquotes}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xurl}
+\usepackage{placeins}
+
+\usepackage{geometry}
+\geometry{
+  a4paper,
+  top=30mm,
+  right=5mm,
+  bottom=20mm,
+  left=5mm,
+  headheight=61pt
+}
+\setlength{\columnsep}{8mm}
+\raggedcolumns  % не растягивать колонки по высоте
+\emergencystretch=2em
+\renewcommand{\topfraction}{0.95}
+\renewcommand{\bottomfraction}{0.6}
+\renewcommand{\textfraction}{0.05}
+\renewcommand{\floatpagefraction}{0.85}
+\setcounter{topnumber}{3}\setcounter{totalnumber}{4}
+
+\newcommand{\mydate}{Сентябрь, 2026}
+\newcommand{\myauthor}{В. Алексеев, С. Зинина, И. Коновалов, В. Горбатенко, А. Соколова}
+
+\fancyhf{}
+\fancyhead[L]{\large \textit{Научная студия 2026. Вычислительная онкология. Данные и радиомика.}}
+\fancyfoot[C]{\thepage}
+\pagestyle{fancy}
+
+\fancypagestyle{firstpage}{
+  \fancyhf{}
+  \fancyhead[L]{\hspace{-15pt}\includegraphics[width=0.3\linewidth]{fig/cu_logo.png}}
+  \fancyhead[R]{\mydate\\\textit{\myauthor}\\}
+  \fancyfoot[C]{\thepage}
+}
+
+\newcommand{\code}[1]{\texttt{\small #1}}
+
+\begin{document}
+\thispagestyle{firstpage}
+
+\begin{multicols*}{2}
+\section*{Материалы и методы}
+
+\subsection*{Описание набора данных}
+
+В работе использовался открытый набор данных пациентов с плоскоклеточным раком ротоглотки, подготовленный MICCAI/M.\,D.~Anderson Cancer Center Head and Neck Quantitative Imaging Working Group \autocite{Elhalawani2017}. Набор включает ретроспективные деидентифицированные данные пациентов, получавших радикальную лучевую терапию с модуляцией интенсивности (IMRT) в MD Anderson Cancer Center в 2005--2012~гг. В работе использовалась версия для задачи прогнозирования локального рецидива\textsuperscript{\cite{KaggleOPC}}, распространяемая в формате NIfTI.\vspace{6pt}\\
+Согласно описанию авторов, включались пациенты с гистологически подтверждённым плоскоклеточным раком ротоглотки, известным HPV/p16-статусом, без предшествующего хирургического лечения и с контрастным КТ до начала лечения, исключались пациенты без пригодного КТ (без контрастирования, с артефактами, выполненным после индукционной химиотерапии или биопсии). В статье итоговая выборка составляет 288 пациентов, однако распространяемая версия содержит 315 пациентов (150 в обучающей и 165 в тестовой части), т.\,е. соответствует этапу до исключения 9 возможных дубликатов и 18 случаев с некорректной маской опухоли.\vspace{6pt}\\
+В итоговую таблицу вошли 298 пациентов (140 обучающей и 158 тестовой части, рис.~\ref{fig:flow}), 17 пациентов исключены из-за отсутствия маски первичной опухоли, без которой признаки опухоли рассчитать невозможно. Маска лимфоузлов имеется у 253 из 298 пациентов -- её отсутствие не являлось критерием исключения.\vspace{6pt}\\
+Единственная модальность -- КТ головы и шеи с внутривенным контрастированием (преимущественно томографы GE LightSpeed, матрица $512\times512$); размер вокселя в плоскости среза 0,39--0,84~мм, толщина среза 0,39--5,0~мм (медиана 1,0~мм).\vspace{6pt}\\
+Клиническая таблица содержит 18 переменных: целевую переменную \code{Local\_tumor\_recurrence} (локальный рецидив: 1/0, 12 случаев из 140 в обучающей части), демографические данные (пол, возраст на момент диагноза, раса), характеристики опухоли (сторона, подобласть ротоглотки, категории T и N и стадия AJCC 7-го издания, степень дифференцировки), анамнез курения (статус и пачко-годы), параметры лечения (длительность курса облучения, суммарная доза в Гр, число фракций, индукционная и одновременная химиотерапия) и жизненный статус (\code{KM\_Overall\_survival\_censor}: 1 -- жив, 0 -- умер). Пропуски есть в степени дифференцировки (43), пачко-годах (14) и расе (1). HPV-статус, упомянутый в описании, в таблицах отсутствует.
+
+\subsection*{Протокол извлечения радиомических признаков}
+
+Для каждого пациента доступны КТ (\code{CT.nii.gz}, значения в единицах Хаунсфилда) и маски в той же геометрии: бинарная маска первичной опухоли \code{GTVp.nii.gz} и маска метастатических лимфоузлов \code{GTVn.nii.gz}, в которой каждый узел имеет собственную метку (1, 2, \dots), примеры приведены на рис.~\ref{fig:patients}. Маски построены вручную двумя радиационными онкологами в VelocityAI~3.0.1 по диагностическим КТ согласно рекомендациям ICRU~62/83, без доступа к клиническим данным, и проверены третьим специалистом \autocite{Elhalawani2017}.\vspace{6pt}\\
+Признаки рассчитывались в PyRadiomics \autocite{vanGriethuysen2017} (версия 3.1.1.dev111) с чтением изображений через SimpleITK~2.5.6 \autocite{Lowekamp2013}. Для GTVp признаки считались по маске как есть, для GTVn все узлы объединялись в одну маску, дополнительно сохранялось число узлов. Поскольку толщина среза различается между пациентами, а текстурные признаки чувствительны к разрешению \autocite{Zwanenburg2020}, изображения приводились к изотропному вокселю $1\times1\times1$~мм (КТ -- B-сплайн, маска -- ближайший сосед). Ширина бина -- 25~HU, нормализация и фильтры не применялись, остальные настройки -- по умолчанию.\vspace{6pt}\\
+Рассчитывались все классы признаков PyRadiomics по исходному изображению -- по 107 признаков для каждой маски (табл.~\ref{tab:features}), всего 215 признаков на пациента с учётом числа узлов. Итоговая таблица содержит 298 строк и 235 столбцов (идентификатор, часть набора, 18 клинических переменных и 215 признаков), у 45 пациентов без лимфоузлов признаки GTVn не определены (NaN).
+
+\vspace{8pt}\noindent\begin{minipage}{\linewidth}
+\centering
+\begin{tikzpicture}[
+  box/.style={draw, rounded corners=2pt, align=center, font=\small, minimum height=10mm, inner sep=3pt},
+  ex/.style={box, fill=red!6, font=\footnotesize},
+  ok/.style={box, fill=green!8},
+  arr/.style={-{Stealth[length=2.2mm]}, thick}]
+\node[box, text width=40mm] (b) {315 пациентов\\150 Training + 165 Test};
+\node[ok, text width=44mm, below=14mm of b] (d) {\textbf{298 в\,итоговой\,таблице}\\140 Training + 158 Test\\из них с GTVn: 253};
+\path (b) -- (d) coordinate[midway] (m);
+\node[ex, text width=24mm, right=4mm of m] (e) {17 исключены:\\нет\,маски\,GTVp};
+\draw[arr] (b) -- (d); \draw[arr] (m) -- (e);
+\end{tikzpicture}
+\captionof{figure}{Формирование итоговой выборки.}
+\label{fig:flow}
+\end{minipage}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.5\linewidth]{fig/patients.png}
+\captionof{figure}{Аксиальные КТ-срезы трёх пациентов (Patient\_ID 10 и 2 -- обучающая часть, 14 -- тестовая) с контурами GTVp (красный) и GTVn (голубой): срез с наибольшей площадью опухоли, справа -- увеличенный фрагмент, окно 40/400~HU.}
+\label{fig:patients}
+\end{figure*}
+
+
+\end{multicols*}
+
+\noindent\begin{minipage}[t]{\dimexpr(\linewidth-\columnsep)/2}
+\vspace{0pt}
+\centering
+\small
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{lrr}
+\hline\hline
+Класс признаков & GTVp & GTVn \\ \hline
+Форма (shape) & 14 & 14 \\
+Первого порядка (firstorder) & 18 & 18 \\
+GLCM & 24 & 24 \\
+GLRLM & 16 & 16 \\
+GLSZM & 16 & 16 \\
+GLDM & 14 & 14 \\
+NGTDM & 5 & 5 \\
+Число узлов & "--- & 1 \\ \hline
+\textbf{Всего} & \textbf{107} & \textbf{108} \\
+\hline\hline
+\end{tabular}
+\captionof{table}{Извлечённые группы радиомических признаков.}
+\label{tab:features}
+\end{minipage}\hfill
+\begin{minipage}[t]{\dimexpr(\linewidth-\columnsep)/2}
+\vspace{0pt}
+При контроле качества у трёх пациентов тестовой части выявлена нетипичная плотность внутри GTVp (рис.~\ref{fig:qc}): в маски пациентов 219 и 289 попадает просвет дыхательных путей, у пациента 257 контур частично лежит на кости.\vspace{6pt}\\
+Распределения большинства признаков сильно скошены (рис.~\ref{fig:dist}): модуль коэффициента асимметрии превышает 1 у 79\,\% признаков GTVp и 76\,\% признаков GTVn (медиана 3,4 и 4,2 соответственно), поэтому перед моделированием потребуется логарифмическое преобразование. После логарифмирования распределения объёма и текстурных признаков близки к нормальным, лимфоузлы в среднем однороднее первичной опухоли (ниже контраст GLCM и энтропия зон GLSZM).
+\end{minipage}
+\vspace{10pt}
+
+
+
+
+\noindent\begin{minipage}{\linewidth}
+\centering
+\includegraphics[width=0.48\linewidth]{fig/qc.png}
+\captionof{figure}{Пациенты с некорректными масками GTVp (контур красным, окно 40/400~HU).}
+\label{fig:qc}
+\end{minipage}\vspace{8pt}
+
+\begin{center}
+\includegraphics[width=0.8\linewidth]{fig/dist.png}
+\captionof{figure}{Распределения характерных признаков каждого класса для GTVp и GTVn, скошенные признаки -- в log10, ось ограничена 1--99 перцентилями.}
+\label{fig:dist}
+\end{center}
+
+
+\FloatBarrier
+\begin{multicols}{2}
+\subsection*{Ссылки}
+\printbibliography[heading=none]
+\end{multicols}
+
+\end{document}
