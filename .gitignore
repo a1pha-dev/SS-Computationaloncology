@@ -1,0 +1,16 @@
+.DS_Store
+.idea/
+.venv/
+*.zip
+.ipynb_checkpoints/
+*.aux
+*.log
+*.out
+*.bbl
+*.bcf
+*.blg
+*.fls
+*.fdb_latexmk
+*.run.xml
+*.synctex.gz
+*.toc

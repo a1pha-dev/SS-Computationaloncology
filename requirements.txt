@@ -1,0 +1,12 @@
+# Python 3.14; pyradiomics для 3.14 нет на PyPI (3.1.0 не собирается), ставится из GitHub
+numpy==2.5.3
+pandas==3.0.6
+matplotlib==3.11.2
+SimpleITK==2.5.6
+tqdm==4.70.1
+PyWavelets==1.10.0
+pykwalify==1.8.0
+pyradiomics @ git+https://github.com/AIM-Harvard/pyradiomics.git@8ed579383b44806651c463d5e691f3b2b57522ab
+jupyterlab==4.6.4
+ipykernel==7.3.0
+nbconvert==7.17.1
