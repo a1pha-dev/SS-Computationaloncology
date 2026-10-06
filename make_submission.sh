@@ -18,7 +18,7 @@ case "$WEEK" in
 esac
 
 # PDF отчёта: собранный LaTeX-проект недели
-for PDF in "$DIR/text/report/main.pdf" "$DIR/text.pdf"; do
+for PDF in "$DIR/text/main.pdf" "$DIR/text/text.pdf"; do
   [[ -f "$PDF" ]] && break
 done
 [[ -f "$PDF" ]] || { echo "не найден PDF отчёта в $DIR" >&2; exit 1; }

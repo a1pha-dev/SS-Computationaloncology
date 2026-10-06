@@ -15,11 +15,11 @@
 | `w3/` | Неделя 3 «Данные и радиомика» |
 | `w3/practice.ipynb` | визуализация КТ и масок, извлечение признаков PyRadiomics, сборка таблицы |
 | `w3/dataset.csv` | 298 пациентов × 235 столбцов: `Patient_ID`, `Fold`, 18 клинических, 107 `GTVp_*`, 107 `GTVn_*`, `GTVn_n_nodes` |
-| `w3/text/report/` | LaTeX-отчёт: `main.tex`, `source.bib`, `fig/`, собранный `main.pdf` |
+| `w3/text/` | LaTeX-отчёт: `main.tex`, `source.bib`, `fig/`, собранный `main.pdf` |
 | `w4/` | Неделя 4 «Общий анализ данных» |
 | `w4/practice.ipynb` | проверка значений, целевая переменная, отбор признаков, аналитическая таблица; читает `w3/dataset.csv` |
 | `w4/analytic_table.csv` | 140 пациентов: `Patient_ID`, `Target_local_recurrence`, 102 признака |
-| `w4/text.tex`, `references.bib`, `dictionary_rows.tex`, `logo.png` | LaTeX-отчёт и словарь переменных; собранный `text.pdf` |
+| `w4/text/` | LaTeX-отчёт: `text.tex`, `references.bib`, словарь переменных `dictionary_rows.tex`, `logo.png`, собранный `text.pdf` |
 | `make_submission.sh` | сборка архива для сдачи |
 
 ## Окружение
@@ -47,8 +47,8 @@ cd w4 && ../.venv/bin/jupyter nbconvert --to notebook --execute --inplace practi
 Отчёты собираются LaTeX (pdfLaTeX + biber):
 
 ```bash
-cd w3/text/report && latexmk -pdf main.tex
-cd w4 && latexmk -pdf text.tex
+cd w3/text && latexmk -pdf main.tex
+cd w4/text && latexmk -pdf text.tex
 ```
 
 ## Сдача
