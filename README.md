@@ -25,7 +25,7 @@ w<i>/
 | Неделя | Тема | Таблица |
 |---|---|---|
 | `w3/` | Данные и радиомика | `dataset.csv` — 298 пациентов × 235 столбцов: `Patient_ID`, `Fold`, 18 клинических, 107 `GTVp_*`, 107 `GTVn_*`, `GTVn_n_nodes` |
-| `w4/` | Общий анализ данных | `analytic_table.csv` — 140 пациентов: `Patient_ID`, `Target_local_recurrence`, 52 признака; ноутбук читает `../w3/dataset.csv`, словарь переменных — `text/dictionary_rows.tex` |
+| `w4/` | Общий анализ данных | `analytic_table.csv` — 140 пациентов: `Patient_ID`, `Target_local_recurrence`, 31 признак (клинические и первичная опухоль); ноутбук читает `../w3/dataset.csv`, словарь переменных — `text/dictionary_rows.tex` |
 
 В корне: `participants.txt` (участники команды, общий для всех недель), `make_submission.sh`, `requirements.txt`.
 
