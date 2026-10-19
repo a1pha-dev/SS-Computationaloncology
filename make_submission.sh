@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Сборка архива для сдачи: ./make_submission.sh <i> <команда>  ->  w<i>_team<команда>.zip
-# В архив попадают participants.txt, w<i>/practice.ipynb, w<i>/text/main.pdf (как text.pdf) и таблица w<i>/*.csv.
+# В архив попадают participants.txt, w<i>/practice.ipynb, w<i>/text/main.pdf (как text.pdf) и таблицы w<i>/*.csv.
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -14,11 +14,11 @@ OUT="w${WEEK}_team${TEAM}.zip"
 [[ -f "$DIR/text/main.pdf" ]] || { echo "нет $DIR/text/main.pdf — соберите отчёт: cd $DIR/text && latexmk -pdf main.tex" >&2; exit 1; }
 
 TABLES=("$DIR"/*.csv)
-[[ ${#TABLES[@]} -eq 1 && -f "${TABLES[0]}" ]] || { echo "в $DIR должна быть ровно одна сдаваемая таблица *.csv" >&2; exit 1; }
+[[ -f "${TABLES[0]}" ]] || { echo "в $DIR нет сдаваемых таблиц *.csv" >&2; exit 1; }
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
-cp participants.txt "$DIR/practice.ipynb" "${TABLES[0]}" "$TMP/"
+cp participants.txt "$DIR/practice.ipynb" "${TABLES[@]}" "$TMP/"
 cp "$DIR/text/main.pdf" "$TMP/text.pdf"
 
 rm -f "$OUT"
