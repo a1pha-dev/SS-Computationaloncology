@@ -27,6 +27,7 @@ w<i>/
 | `w3/` | Данные и радиомика | `dataset.csv` — 298 пациентов × 235 столбцов: `Patient_ID`, `Fold`, 18 клинических, 107 `GTVp_*`, 107 `GTVn_*`, `GTVn_n_nodes` |
 | `w4/` | Общий анализ данных | `analytic_table.csv` — 140 пациентов: `Patient_ID`, `Target_local_recurrence`, 31 признак (клинические и первичная опухоль); ноутбук читает `../w3/dataset.csv`, словарь переменных — `text/dictionary_rows.tex` |
 | `w5/` | Нормализация и кодирование признаков | `train.csv` (105 пациентов) и `test.csv` (35 пациентов): `Patient_ID`, `Target_local_recurrence`, 35 подготовленных числовых признаков; ноутбук читает `../w4/analytic_table.csv` |
+| `w7/` | Статистический анализ | без таблиц и отчёта: однофакторный анализ (таблицы сопряжённости, RD, RR, OR, V Крамера, OR на межквартильный размах) и выводы в `practice.ipynb`; ноутбук читает `../w4/analytic_table.csv` |
 
 В корне: `participants.txt` (участники команды, общий для всех недель), `make_submission.sh`, `requirements.txt`.
 
@@ -39,7 +40,7 @@ python3.14 -m venv .venv
 ```
 
 pyradiomics 3.1.0 с PyPI не собирается под Python 3.14, поэтому ставится из GitHub (закреплённый коммит).
-Неделям 4 и 5 нужны только numpy, pandas, matplotlib, seaborn и scikit-learn.
+Неделям 4 и 5 нужны только numpy, pandas, matplotlib, seaborn и scikit-learn, неделе 7 — только numpy и pandas.
 
 ## Сборка недели `w<i>`
 
@@ -58,4 +59,4 @@ cd w<i>/text && latexmk -pdf main.tex && latexmk -c
 ./make_submission.sh <i> 04
 ```
 
-Скрипт собирает `w<i>_team04.zip` без вложенных папок: `participants.txt`, `practice.ipynb`, `text.pdf` (из `w<i>/text/main.pdf`) и таблицы `w<i>/*.csv`.
+Скрипт собирает `w<i>_team04.zip` без вложенных папок: `participants.txt`, `practice.ipynb` и, если они есть у недели, `text.pdf` (из `w<i>/text/main.pdf`) и таблицы `w<i>/*.csv`.
